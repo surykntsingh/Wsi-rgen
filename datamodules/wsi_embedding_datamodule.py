@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import DataLoader, random_split
 from torch.nn.utils.rnn import pad_sequence
 import pytorch_lightning as pl
@@ -41,6 +42,6 @@ class PatchEmbeddingDataModule(pl.LightningDataModule):
         patch_feats = pad_sequence(patch_feats, batch_first=True)
         coord_feats =  pad_sequence(coord_feats, batch_first=True)
 
-        return slide_ids, patch_feats, coord_feats, report_ids, report_masks, seq_length
+        return slide_ids, patch_feats, coord_feats,torch.LongTensor(report_ids), torch.FloatTensor(report_masks), seq_length
 
 

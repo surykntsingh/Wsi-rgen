@@ -62,7 +62,7 @@ class Tokenizer:
                 break
         return txt
 
-    def decode_batch(self, ids_batch):
+    def batch_decode(self, ids_batch):
         out = []
         for ids in ids_batch:
             out.append(self.decode(ids))

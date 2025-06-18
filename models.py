@@ -25,19 +25,22 @@ class ReportModel(pl.LightningModule):
 
     def training_step(self, batch):
         _, patch_feats, pos_feats, report_ids, report_masks, _ = batch
-        output = self.model(patch_feats, pos_feats, report_ids)
+        output = self.model(patch_feats, pos_feats, report_ids, mode='train')
         loss = self.loss_fn(output, report_ids, report_masks)
         self.log('train_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch):
         _, patch_feats, pos_feats, report_ids, report_masks, _ = batch
-        output = self.model(patch_feats, pos_feats, report_ids)
-        loss = self.loss_fn(output, report_ids, report_masks)
+        output = self.model(patch_feats, pos_feats, report_ids, mode='sample')
+        output_ = self.model(patch_feats, pos_feats, report_ids, mode='train')
+        loss = self.loss_fn(output_, report_ids, report_masks)
         self.log('val_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
 
-        pred_texts = self.tokenizer.batch_decode(output, skip_special_tokens=True)
-        target_texts = self.tokenizer.batch_decode(report_ids, skip_special_tokens=True)
+        pred_texts = self.tokenizer.batch_decode(output.cpu().numpy())
+        target_texts = self.tokenizer.batch_decode(report_ids[:, 1:].cpu().numpy())
+
+        print(f'pred_texts: {pred_texts}, target_texts: {target_texts}')
 
         rouge_score = self.rouge(pred_texts, target_texts)
         bleu_score = self.bleu(pred_texts, target_texts)
