@@ -24,16 +24,16 @@ class ReportModel(pl.LightningModule):
         return loss
 
     def training_step(self, batch):
-        _, patch_feats, pos_feats, report_ids, report_masks, _ = batch
-        output = self.model(patch_feats, pos_feats, report_ids, mode='train')
+        _, patch_feats, pos_feats, report_ids, report_masks, patch_masks = batch
+        output = self.model(patch_feats, pos_feats, report_ids, patch_masks, mode='train')
         loss = self.loss_fn(output, report_ids, report_masks)
         self.log('train_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch):
-        _, patch_feats, pos_feats, report_ids, report_masks, _ = batch
+        _, patch_feats, pos_feats, report_ids, report_masks, patch_masks = batch
         output = self.model(patch_feats, pos_feats, report_ids, mode='sample')
-        output_ = self.model(patch_feats, pos_feats, report_ids, mode='train')
+        output_ = self.model(patch_feats, pos_feats, report_ids, patch_masks, mode='train')
         loss = self.loss_fn(output_, report_ids, report_masks)
         self.log('val_loss', loss, on_epoch=True, prog_bar=True, sync_dist=True)
 

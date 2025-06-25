@@ -23,14 +23,14 @@ class ReportGenModel(nn.Module):
         self.encoder_decoder = EncoderDecoder(args, tokenizer)
 
 
-    def forward(self, image_embeddings, pos_embeddings, targets, mode='train'):
+    def forward(self, image_embeddings, pos_embeddings, report_ids, patch_masks, mode='train'):
         coords_encoded = self.positional_encoder(pos_embeddings)
         patch_feats = image_embeddings + coords_encoded
 
         att_feats = torch.cat([self.prompt, patch_feats], dim=1)
         fc_feats = torch.sum(att_feats, dim=1)
         if mode == 'train':
-            output = self.encoder_decoder(fc_feats, att_feats, targets, mode='forward')
+            output = self.encoder_decoder(fc_feats, att_feats, report_ids, att_masks=patch_masks, mode='forward')
         elif mode == 'sample':
             output, _ = self.encoder_decoder(fc_feats, att_feats, mode='sample')
         elif mode == 'encode':

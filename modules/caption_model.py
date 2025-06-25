@@ -170,6 +170,7 @@ class CaptionModel(nn.Module):
                                                   state_table[divm])
 
                     # if time's up... or if end token is reached then copy beams
+
                     for b in range(batch_size):
                         is_end = beam_seq_table[divm][b, :, t - divm] == self.eos_idx
                         assert beam_seq_table[divm].shape[-1] == t - divm + 1
@@ -198,6 +199,7 @@ class CaptionModel(nn.Module):
         done_beams_table = [[sorted(done_beams_table[b][i], key=lambda x: -x['p'])[:bdash] for i in range(group_size)]
                             for b in range(batch_size)]
         done_beams = [sum(_, []) for _ in done_beams_table]
+        print(f'done_beams: {list(map(lambda x: (x['seq'], x['p']), done_beams))}')
         return done_beams
 
     def old_beam_search(self, init_state, init_logprobs, *args, **kwargs):

@@ -39,9 +39,13 @@ class PatchEmbeddingDataModule(pl.LightningDataModule):
     @staticmethod
     def collate_fn(batch):
         slide_ids, patch_feats, coord_feats, report_ids, report_masks, seq_length = zip(*batch)
-        patch_feats = pad_sequence(patch_feats, batch_first=True)
-        coord_feats =  pad_sequence(coord_feats, batch_first=True)
+        patch_feats_pad = pad_sequence(patch_feats, batch_first=True)
+        coord_feats_pad =  pad_sequence(coord_feats, batch_first=True)
+        patch_mask = torch.zeros(patch_feats_pad.shape[:2], dtype=torch.float32)
+        for i, p in enumerate(patch_feats):
+            patch_mask[i, :p.shape[0]] = 1
 
-        return slide_ids, patch_feats, coord_feats,torch.LongTensor(report_ids), torch.FloatTensor(report_masks), seq_length
+        return (slide_ids, patch_feats_pad, coord_feats_pad, torch.LongTensor(report_ids),
+                torch.FloatTensor(report_masks), torch.FloatTensor(patch_mask))
 
 
